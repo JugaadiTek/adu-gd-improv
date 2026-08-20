@@ -1,0 +1,263 @@
+[gd_scene load_steps=24 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/objects/Checkpoint.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/objects/GoalArea.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/objects/FloorSensor.tscn" id="5"]
+[ext_resource type="Script" path="res://scripts/levels/level_controller.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/levels/turn_manager.gd" id="7"]
+[ext_resource type="Script" path="res://scripts/environment/flicker_light.gd" id="8"]
+[ext_resource type="Shader" path="res://shaders/lava_floor.gdshader" id="9"]
+
+[sub_resource type="ProceduralSkyMaterial" id="SkyMat_1"]
+sky_top_color = Color(0.45, 0.58, 0.85, 1)
+sky_horizon_color = Color(0.75, 0.8, 0.85, 1)
+ground_bottom_color = Color(0.3, 0.28, 0.25, 1)
+ground_horizon_color = Color(0.75, 0.8, 0.85, 1)
+
+[sub_resource type="Sky" id="Sky_1"]
+sky_material = SubResource("SkyMat_1")
+
+[sub_resource type="Environment" id="Environment_1"]
+background_mode = 2
+sky = SubResource("Sky_1")
+ambient_light_source = 3
+ambient_light_energy = 0.0
+
+[sub_resource type="BoxShape3D" id="FloorShape"]
+size = Vector3(50, 0.3, 20)
+
+[sub_resource type="BoxMesh" id="FloorMesh"]
+size = Vector3(50, 0.3, 20)
+
+[sub_resource type="ShaderMaterial" id="FloorMat"]
+shader = ExtResource("9")
+shader_parameter/color_dark = Color(0.08, 0.01, 0.01, 1)
+shader_parameter/color_mid = Color(0.55, 0.08, 0.02, 1)
+shader_parameter/color_hot = Color(1, 0.55, 0.05, 1)
+shader_parameter/scroll_speed = 0.07
+shader_parameter/noise_scale = 30.0
+shader_parameter/emission_strength = 2.2
+shader_parameter/roughness_value = 0.55
+
+[sub_resource type="BoxShape3D" id="Shape_WallLong"]
+size = Vector3(50, 8, 0.3)
+[sub_resource type="BoxMesh" id="Mesh_WallLong"]
+size = Vector3(50, 8, 0.3)
+[sub_resource type="BoxShape3D" id="Shape_WallSide"]
+size = Vector3(0.3, 8, 20)
+[sub_resource type="BoxMesh" id="Mesh_WallSide"]
+size = Vector3(0.3, 8, 20)
+[sub_resource type="BoxShape3D" id="Shape_Ceiling"]
+size = Vector3(50, 0.3, 20)
+[sub_resource type="BoxMesh" id="Mesh_Ceiling"]
+size = Vector3(50, 0.3, 20)
+[sub_resource type="StandardMaterial3D" id="Mat_Wall"]
+albedo_color = Color(0.4, 0.37, 0.33, 1)
+roughness = 0.95
+
+[sub_resource type="BoxMesh" id="Mesh_TableLeg"]
+size = Vector3(0.4, 6, 0.4)
+[sub_resource type="StandardMaterial3D" id="Mat_Wood"]
+albedo_color = Color(0.4, 0.25, 0.12, 1)
+
+[sub_resource type="BoxMesh" id="Mesh_TableTop"]
+size = Vector3(3, 0.15, 3)
+
+[sub_resource type="BoxMesh" id="Mesh_Bed"]
+size = Vector3(6, 2.4, 3)
+[sub_resource type="StandardMaterial3D" id="Mat_Bed"]
+albedo_color = Color(0.25, 0.35, 0.65, 1)
+
+[sub_resource type="BoxMesh" id="Mesh_TV"]
+size = Vector3(1.2, 1.2, 1.3)
+[sub_resource type="StandardMaterial3D" id="Mat_TV"]
+albedo_color = Color(0.15, 0.15, 0.17, 1)
+
+[sub_resource type="CylinderMesh" id="Mesh_LampShade"]
+top_radius = 0.25
+bottom_radius = 0.35
+height = 0.4
+[sub_resource type="StandardMaterial3D" id="Mat_LampShade"]
+albedo_color = Color(0.95, 0.85, 0.6, 1)
+
+[sub_resource type="BoxMesh" id="Mesh_Tube"]
+size = Vector3(2.2, 0.08, 0.08)
+[sub_resource type="StandardMaterial3D" id="Mat_Tube"]
+albedo_color = Color(0.9, 0.95, 1, 1)
+emission_enabled = true
+emission = Color(0.9, 0.95, 1, 1)
+emission_energy_multiplier = 1.5
+
+[node name="TestLevel" type="Node3D"]
+script = ExtResource("6")
+course_root_path = NodePath("Course")
+start_marker_path = NodePath("StartMarker")
+checkpoint_paths = Array[NodePath]([NodePath("Checkpoint1"), NodePath("Checkpoint2"), NodePath("Checkpoint3")])
+goal_path = NodePath("Goal")
+erasers_root_path = NodePath("Erasers")
+player_path = NodePath("Player")
+turn_manager_path = NodePath("TurnManager")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_1")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-55, -30, 0)
+light_energy = 0.12
+shadow_enabled = true
+
+[node name="Floor" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, -0.15, 0)
+
+[node name="Collision" type="CollisionShape3D" parent="Floor"]
+shape = SubResource("FloorShape")
+
+[node name="Mesh" type="MeshInstance3D" parent="Floor"]
+mesh = SubResource("FloorMesh")
+surface_material_override/0 = SubResource("FloorMat")
+
+[node name="FloorSensor" parent="." instance=ExtResource("5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0.05, 0)
+
+[node name="Course" type="Node3D" parent="."]
+
+[node name="StartMarker" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+
+[node name="Checkpoint1" parent="." instance=ExtResource("3")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0.3, 0)
+checkpoint_order = 1
+
+[node name="Checkpoint2" parent="." instance=ExtResource("3")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 0.3, 0)
+checkpoint_order = 2
+
+[node name="Checkpoint3" parent="." instance=ExtResource("3")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 0.3, 0)
+checkpoint_order = 3
+
+[node name="Goal" parent="." instance=ExtResource("4")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34, 0.3, 0)
+
+[node name="Erasers" type="Node3D" parent="."]
+
+[node name="Player" parent="." instance=ExtResource("2")]
+
+[node name="TurnManager" type="Node" parent="."]
+script = ExtResource("7")
+
+[node name="WallNorth" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 4, -10)
+[node name="Collision" type="CollisionShape3D" parent="WallNorth"]
+shape = SubResource("Shape_WallLong")
+[node name="Mesh" type="MeshInstance3D" parent="WallNorth"]
+mesh = SubResource("Mesh_WallLong")
+surface_material_override/0 = SubResource("Mat_Wall")
+
+[node name="WallSouth" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 4, 10)
+[node name="Collision" type="CollisionShape3D" parent="WallSouth"]
+shape = SubResource("Shape_WallLong")
+[node name="Mesh" type="MeshInstance3D" parent="WallSouth"]
+mesh = SubResource("Mesh_WallLong")
+surface_material_override/0 = SubResource("Mat_Wall")
+
+[node name="WallWest" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 4, 0)
+[node name="Collision" type="CollisionShape3D" parent="WallWest"]
+shape = SubResource("Shape_WallSide")
+[node name="Mesh" type="MeshInstance3D" parent="WallWest"]
+mesh = SubResource("Mesh_WallSide")
+surface_material_override/0 = SubResource("Mat_Wall")
+
+[node name="WallEast" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 45, 4, 0)
+[node name="Collision" type="CollisionShape3D" parent="WallEast"]
+shape = SubResource("Shape_WallSide")
+[node name="Mesh" type="MeshInstance3D" parent="WallEast"]
+mesh = SubResource("Mesh_WallSide")
+surface_material_override/0 = SubResource("Mat_Wall")
+
+[node name="Ceiling" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 8, 0)
+[node name="Collision" type="CollisionShape3D" parent="Ceiling"]
+shape = SubResource("Shape_Ceiling")
+[node name="Mesh" type="MeshInstance3D" parent="Ceiling"]
+mesh = SubResource("Mesh_Ceiling")
+surface_material_override/0 = SubResource("Mat_Wall")
+
+[node name="TableLeg" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 3, 8.3)
+mesh = SubResource("Mesh_TableLeg")
+surface_material_override/0 = SubResource("Mat_Wood")
+
+[node name="TableTop" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 6.05, 8.3)
+mesh = SubResource("Mesh_TableTop")
+surface_material_override/0 = SubResource("Mat_Wood")
+
+[node name="Lamp" type="MeshInstance3D" parent="TableTop"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 0.4, 0.8)
+mesh = SubResource("Mesh_LampShade")
+surface_material_override/0 = SubResource("Mat_LampShade")
+
+[node name="LampLight" type="OmniLight3D" parent="TableTop/Lamp"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+light_color = Color(1, 0.85, 0.6, 1)
+light_energy = 4.5
+omni_range = 6.0
+shadow_enabled = true
+
+[node name="BedFrame" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 1.2, 8.3)
+mesh = SubResource("Mesh_Bed")
+surface_material_override/0 = SubResource("Mat_Bed")
+
+[node name="CRTTV" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 1.5, -9)
+mesh = SubResource("Mesh_TV")
+surface_material_override/0 = SubResource("Mat_TV")
+
+[node name="TVLight" type="OmniLight3D" parent="CRTTV"]
+script = ExtResource("8")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.9)
+light_color = Color(0.45, 0.6, 1, 1)
+omni_range = 4.0
+shadow_enabled = true
+base_energy = 2.8
+flicker_amount = 0.5
+flicker_speed = 18.0
+
+[node name="FluorescentTube1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 7, 0)
+mesh = SubResource("Mesh_Tube")
+surface_material_override/0 = SubResource("Mat_Tube")
+
+[node name="Light1" type="OmniLight3D" parent="FluorescentTube1"]
+light_color = Color(0.85, 0.9, 1, 1)
+light_energy = 4.0
+omni_range = 12.0
+shadow_enabled = true
+
+[node name="FluorescentTube2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 7, 0)
+mesh = SubResource("Mesh_Tube")
+surface_material_override/0 = SubResource("Mat_Tube")
+
+[node name="Light2" type="OmniLight3D" parent="FluorescentTube2"]
+light_color = Color(0.85, 0.9, 1, 1)
+light_energy = 4.0
+omni_range = 12.0
+shadow_enabled = true
+
+[node name="FluorescentTube3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 7, 0)
+mesh = SubResource("Mesh_Tube")
+surface_material_override/0 = SubResource("Mat_Tube")
+
+[node name="Light3" type="OmniLight3D" parent="FluorescentTube3"]
+light_color = Color(0.85, 0.9, 1, 1)
+light_energy = 4.0
+omni_range = 12.0
+shadow_enabled = true

@@ -71,6 +71,12 @@ const FLAVOR_COLORS := [
 
 class Piece:
 	var piece_name: String
+	## Which FLAVOR_NAMES entry this piece is - kept separate from
+	## piece_name because the last piece's piece_name gets overwritten to
+	## "GoalPad" below (goal marker), which would otherwise make its flavor
+	## unrecoverable for mesh lookup (LevelController needs to know a
+	## GoalPad is still, say, a Book underneath to pick the right model).
+	var flavor: String
 	var pos: Vector3       # center position - and the collision box's transform (axis-aligned, never rotated)
 	var size: Vector3
 	var color: Color
@@ -85,8 +91,9 @@ class Piece:
 	## for these so it's a real gap, not just a visual one.
 	var has_gap_before: bool = false
 
-	func _init(p_name: String, p_pos: Vector3, p_size: Vector3, p_color: Color, p_cum_length: float) -> void:
+	func _init(p_name: String, p_flavor: String, p_pos: Vector3, p_size: Vector3, p_color: Color, p_cum_length: float) -> void:
 		piece_name = p_name
+		flavor = p_flavor
 		pos = p_pos
 		size = p_size
 		color = p_color
@@ -121,7 +128,7 @@ static func generate(seed_value: int = 1337, target_length: float = BASE_LENGTH 
 	var pieces: Array = []
 	var size0: Vector3 = FLAVOR_SIZES[0]
 	var pos := Vector3(0.0, MIN_CENTER_Y, 0.0)
-	pieces.append(Piece.new(FLAVOR_NAMES[0] + "_Start", pos, size0, FLAVOR_COLORS[0], 0.0))
+	pieces.append(Piece.new(FLAVOR_NAMES[0] + "_Start", FLAVOR_NAMES[0], pos, size0, FLAVOR_COLORS[0], 0.0))
 
 	var prev_size := size0
 	var prev_pos := pos
@@ -219,7 +226,7 @@ static func generate(seed_value: int = 1337, target_length: float = BASE_LENGTH 
 
 		var next_pos := Vector3(prev_pos.x + delta_xz.x, next_y, prev_pos.z + delta_xz.y)
 		cum_length += prev_pos.distance_to(next_pos)
-		var piece := Piece.new("%s_%d" % [FLAVOR_NAMES[flavor_i], i], next_pos, size, FLAVOR_COLORS[flavor_i], cum_length)
+		var piece := Piece.new("%s_%d" % [FLAVOR_NAMES[flavor_i], i], FLAVOR_NAMES[flavor_i], next_pos, size, FLAVOR_COLORS[flavor_i], cum_length)
 		# Kept small deliberately: these blocks touch their neighbors with
 		# *zero* gap (see _touch_distance), so any tilt of the visual mesh
 		# beyond a few degrees pokes its corners past the collision box and

@@ -84,6 +84,8 @@ func _test_course_path() -> void:
 		[3.0, 8.3, 1.6, 1.6],   # table
 		[14.0, 8.3, 3.1, 1.6],  # bed
 		[-3.0, -9.0, 0.7, 0.75], # CRT TV
+		[3.0, 10.0, 0.4, 0.4],  # chair 1 (see 08_008.md - furniture pass)
+		[3.0, 6.6, 0.4, 0.4],   # chair 2
 	]
 	var furniture_hit := false
 	for piece in pieces:

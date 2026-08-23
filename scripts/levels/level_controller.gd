@@ -12,6 +12,27 @@ class_name LevelController
 
 const ERASER_SCENE := preload("res://scenes/objects/Eraser.tscn")
 
+## Real low-poly, textured models per CoursePath flavor (see
+## ClaudeNotes/collab/2026/08_008.md) - each authored/exported (Blender MCP)
+## with its bounding box normalized to an exact 1x1x1 cube centered on the
+## origin, so scaling a MeshInstance3D by `piece.size * 0.93` (see
+## _build_course_geometry) reproduces the piece's exact footprint with the
+## same safety margin the old primitive BoxMesh relied on: a mesh's corners
+## can never extend past its own bounding box, and that box is now exactly
+## piece.size*0.93 after this scale - same guarantee as the axis-aligned box
+## it replaces, just non-uniform per axis instead of a uniform box.
+const FLAVOR_MODELS := {
+	"Book": preload("res://assets/models/Book.glb"),
+	"Ruler": preload("res://assets/models/Ruler.glb"),
+	"StationeryTray": preload("res://assets/models/StationeryTray.glb"),
+	"ToyBlock": preload("res://assets/models/ToyBlock.glb"),
+	"BoardGameBox": preload("res://assets/models/BoardGameBox.glb"),
+	"MugCoaster": preload("res://assets/models/MugCoaster.glb"),
+	"RemoteBridge": preload("res://assets/models/RemoteBridge.glb"),
+	"Cup": preload("res://assets/models/Cup.glb"),
+	"Battery": preload("res://assets/models/Battery.glb"),
+}
+
 @export var course_root_path: NodePath
 @export var start_marker_path: NodePath
 @export var checkpoint_paths: Array[NodePath] = []
@@ -92,16 +113,14 @@ func _build_course_geometry() -> void:
 		child.queue_free()
 
 	var shape_cache: Dictionary = {}
-	var mesh_cache: Dictionary = {}
+	var box_mesh_cache: Dictionary = {}
+	var flavor_mesh_cache: Dictionary = {}
 	for piece in _pieces:
 		var key: String = "%s_%s_%s" % [piece.size.x, piece.size.y, piece.size.z]
 		if not shape_cache.has(key):
 			var shape := BoxShape3D.new()
 			shape.size = piece.size
-			var mesh := BoxMesh.new()
-			mesh.size = piece.size
 			shape_cache[key] = shape
-			mesh_cache[key] = mesh
 
 		# The StaticBody3D (and its collision shape) stays perfectly
 		# axis-aligned at piece.pos - that's the tested, guaranteed-walkable
@@ -117,15 +136,26 @@ func _build_course_geometry() -> void:
 		body.add_child(collision)
 
 		var mesh_instance := MeshInstance3D.new()
-		mesh_instance.mesh = mesh_cache[key]
 		mesh_instance.rotation_degrees = piece.visual_tilt_deg
-		# Second safety margin on top of the small tilt angles themselves:
-		# shrunk a hair so a rotated corner still can't reach the touching
-		# neighbor's zero-gap seam.
-		mesh_instance.scale = Vector3.ONE * 0.93
-		var mat := StandardMaterial3D.new()
-		mat.albedo_color = piece.color
-		mesh_instance.material_override = mat
+		var flavor_mesh: Mesh = ModelLib.get_mesh(FLAVOR_MODELS.get(piece.flavor), flavor_mesh_cache, piece.flavor)
+		if flavor_mesh:
+			mesh_instance.mesh = flavor_mesh
+			# Non-uniform per-axis scale (the model's bounding box is an
+			# exact 1x1x1 cube) reproduces piece.size exactly, same 0.93
+			# safety shrink as the old uniform-scaled BoxMesh had.
+			mesh_instance.scale = piece.size * 0.93
+		else:
+			# Fallback for any flavor without an authored model - the
+			# original primitive-box look.
+			if not box_mesh_cache.has(key):
+				var box := BoxMesh.new()
+				box.size = piece.size
+				box_mesh_cache[key] = box
+			mesh_instance.mesh = box_mesh_cache[key]
+			mesh_instance.scale = Vector3.ONE * 0.93
+			var mat := StandardMaterial3D.new()
+			mat.albedo_color = piece.color
+			mesh_instance.material_override = mat
 		body.add_child(mesh_instance)
 
 		course_root.add_child(body)

@@ -357,12 +357,27 @@ func _run_playability_test() -> void:
 			success = true
 			break
 
-		# If we're now far from where progress last was, this is a fall-off
-		# respawn (or the very first stroke) - re-search from the start
-		# instead of staying stuck aiming at a piece the ball is nowhere
-		# near anymore.
-		var dist_to_progress: float = pieces[progress_index].pos.distance_to(eraser.global_position)
-		var search_start: int = progress_index if dist_to_progress <= 6.0 else 0
+		# Detect a fall-off respawn: the old check here only reset the
+		# forward-only search if we ended up more than 6m from the
+		# tracked progress piece - too generous on a compact winding
+		# course, where a respawn to an *earlier* checkpoint can easily
+		# land well within 6m of wherever progress last was (found via
+		# CoursePath.CLIMB_PERSISTENCE's taller courses: a jump gap
+		# stranded the sim exactly 1.13m from its own progress_index
+		# piece after respawning to the checkpoint *before* it, so the
+		# 6m check never fired, the forward-only search from that stale
+		# progress_index couldn't see the checkpoint piece it had
+		# actually respawned onto, and it re-aimed the identical failing
+		# jump forever). The right question isn't "are we still near the
+		# piece progress was" but "is there a piece *behind* progress
+		# that we're now genuinely resting on" - if so, trust it; that's
+		# a real regression (a respawn), not the winding path just
+		# passing near old geometry while still net moving forward.
+		var unrestricted_index: int = _nearest_piece_index_from(pieces, eraser.global_position, 0)
+		var search_start: int = progress_index
+		if unrestricted_index < progress_index \
+				and pieces[unrestricted_index].pos.distance_to(eraser.global_position) < 1.0:
+			search_start = unrestricted_index
 		progress_index = _nearest_piece_index_from(pieces, eraser.global_position, search_start)
 		var lookahead_index: int = min(progress_index + LOOKAHEAD_PIECES, pieces.size() - 1)
 		var near_goal: bool = lookahead_index >= pieces.size() - 1
@@ -401,8 +416,34 @@ func _run_playability_test() -> void:
 		elif dist > 1.0:
 			loft = 0.15
 
+		# Compensate for uphill terrain: the target-distance-scaled power
+		# above has no notion of grade at all, only flat horizontal
+		# distance - fine while CoursePath's height changes were small/
+		# incidental, but CoursePath.CLIMB_PERSISTENCE (see course_path.gd)
+		# now lets a real sustained multi-piece climb happen, and a player
+		# who swings the same for a flat putt and a steep uphill approach
+		# comes up short on the climb even with real max_power to spare.
+		# Boost power and add real loft proportional to how much height
+		# needs covering - this is the missing case, not the course being
+		# unfair (see the class comment above on how this sim's own gaps,
+		# not the course, were the answer the last several times something
+		# looked "stuck forever").
+		var height_diff: float = target.y - eraser.global_position.y
+		if not is_jump and height_diff > 0.05:
+			# Loft only, not power: impulse.y is *added* on top of the
+			# horizontal impulse below, not redistributed from it, so more
+			# loft is strictly extra help clearing the climb without
+			# eating into horizontal reach the way boosting power also
+			# would (tried that first - it overshot past the target
+			# platform instead of undershooting, which made things worse,
+			# not better).
+			loft = maxf(loft, 0.18 + height_diff * 0.6)
+
 		var impulse := dir * power
 		impulse.y += power * loft
+		if OS.get_environment("SIM_DEBUG") != "":
+			print("    stroke=%d piece=%d pos=%s target=%s dist=%.2f height_diff=%.2f power=%.2f loft=%.2f is_jump=%s vel=%.2f" % [
+				strokes, progress_index, eraser.global_position, target, dist, height_diff, power, loft, is_jump, eraser.linear_velocity.length()])
 		eraser.strike(impulse)
 		strokes += 1
 

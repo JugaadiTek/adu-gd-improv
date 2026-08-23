@@ -40,6 +40,14 @@ const SLOPE_DEGREES_MAX := 38.0
 ## still a real 5-45' ramp, just spread over more than one piece for a
 ## steep angle.
 const MAX_STEP_HEIGHT_ABS := 0.28
+## Chance, at each slope-interval change, that the new climb/descend
+## direction matches the previous one rather than a flat coin flip - a flip
+## every interval is a random walk in height that rarely sustains a real
+## climb (measured: with a flat 50/50, the generated course topped out
+## around y=1.1 even with MAX_CENTER_Y raised well past the old 3.2 cap -
+## the ceiling was never the actual bottleneck to "more verticality", this
+## was). See where it's used below.
+const CLIMB_PERSISTENCE := 0.66
 
 ## Mandatory jump gaps: real air gaps with no bridge, placed at roughly
 ## these fractions of the total path length (kept off the checkpoint/goal
@@ -206,7 +214,7 @@ static func generate(seed_value: int = 1337, target_length: float = BASE_LENGTH 
 				steps_since_slope_change = 0
 				slope_interval = rng.randi_range(2, 4)
 				slope_angle_deg = SLOPE_DEGREES_MIN + pow(rng.randf(), 1.3) * (SLOPE_DEGREES_MAX - SLOPE_DEGREES_MIN)
-				slope_climbing = rng.randf() < 0.5
+				slope_climbing = (rng.randf() < CLIMB_PERSISTENCE) == slope_climbing
 			var slope_sign: float = 1.0 if slope_climbing else -1.0
 			d_top = clampf(step_dist * tan(deg_to_rad(slope_angle_deg)) * slope_sign, -MAX_STEP_HEIGHT_ABS, MAX_STEP_HEIGHT_ABS)
 

@@ -4,10 +4,10 @@ extends Node
 ## hits/checkpoints/turns/finishes. Hooked to GameManager's signals so no
 ## other script needs to know audio exists.
 ##
-## NOTE: this is SFX only. Real composed background music is out of scope
-## here - there's no music-generation tool available in this environment, so
-## it hasn't been faked. See ClaudeNotes for how to plug in real audio later
-## (drop files under res://audio/music/ and add an AudioStreamPlayer).
+## NOTE: this is SFX only. Background music lives separately -
+## MainMenu.tscn has its own AudioStreamPlayer for the main-menu theme (see
+## audio/music/README.md for the track's license/source) - in-course music
+## is still out of scope.
 
 const SAMPLE_RATE := 22050
 const POOL_SIZE := 4

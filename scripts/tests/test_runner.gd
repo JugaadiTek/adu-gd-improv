@@ -86,6 +86,7 @@ func _test_course_path() -> void:
 		[-3.0, -9.0, 0.7, 0.75], # CRT TV
 		[3.0, 10.0, 0.4, 0.4],  # chair 1 (see 08_008.md - furniture pass)
 		[3.0, 6.6, 0.4, 0.4],   # chair 2
+		[6.0, -9.55, 1.3, 0.4], # bookshelf (see 08_009.md - living room pass; tall, real clip risk)
 	]
 	var furniture_hit := false
 	for piece in pieces:
@@ -438,6 +439,14 @@ func _run_playability_test() -> void:
 			# platform instead of undershooting, which made things worse,
 			# not better).
 			loft = maxf(loft, 0.18 + height_diff * 0.6)
+			# A short, steep hop (small dist, so `power` clamped to the
+			# 1.4 floor above) still needs enough raw horizontal push to
+			# actually climb onto the target platform, not just an
+			# upward-leaning trajectory that lands short of the edge and
+			# slides back down - found this the hard way: loft alone
+			# left the sim oscillating near the target for 60+ strokes
+			# without ever quite landing on it.
+			power = maxf(power, 1.4 + height_diff * 2.2)
 
 		var impulse := dir * power
 		impulse.y += power * loft

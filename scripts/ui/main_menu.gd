@@ -3,12 +3,19 @@ class_name MainMenu
 ## Configure and launch a hotseat match.
 
 @onready var count_label: Label = $Center/VBox/PlayerCountRow/CountLabel
+@onready var music_player: AudioStreamPlayer = $MusicPlayer
 
 var player_count: int = 1
 
 
 func _ready() -> void:
 	_refresh()
+	# CC0 (public domain) track "Menu Music" by wipics, opengameart.org/content/menu-music-2
+	# - see audio/music/README.md. Looped via the finished signal rather
+	# than relying on the AudioStreamMP3 resource's own loop import flag,
+	# which needs setting per-asset in the editor and is easy to silently
+	# leave off.
+	music_player.finished.connect(func(): music_player.play())
 
 
 func _on_minus_pressed() -> void:

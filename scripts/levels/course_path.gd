@@ -47,7 +47,7 @@ const MAX_STEP_HEIGHT_ABS := 0.28
 ## around y=1.1 even with MAX_CENTER_Y raised well past the old 3.2 cap -
 ## the ceiling was never the actual bottleneck to "more verticality", this
 ## was). See where it's used below.
-const CLIMB_PERSISTENCE := 0.66
+const CLIMB_PERSISTENCE := 0.70
 
 ## Mandatory jump gaps: real air gaps with no bridge, placed at roughly
 ## these fractions of the total path length (kept off the checkpoint/goal

@@ -1,4 +1,4 @@
-[gd_scene load_steps=30 format=3]
+[gd_scene load_steps=37 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/objects/Checkpoint.tscn" id="3"]
@@ -15,6 +15,13 @@
 [ext_resource type="PackedScene" path="res://assets/models/TubeLightFixture.glb" id="14"]
 [ext_resource type="PackedScene" path="res://assets/models/CeilingFan.glb" id="15"]
 [ext_resource type="PackedScene" path="res://assets/models/Poster.glb" id="16"]
+[ext_resource type="PackedScene" path="res://assets/models/Rug.glb" id="17"]
+[ext_resource type="PackedScene" path="res://assets/models/Bookshelf.glb" id="18"]
+[ext_resource type="PackedScene" path="res://assets/models/LaundryBasket.glb" id="19"]
+[ext_resource type="PackedScene" path="res://assets/models/Stool.glb" id="20"]
+[ext_resource type="PackedScene" path="res://assets/models/Book.glb" id="21"]
+[ext_resource type="PackedScene" path="res://assets/models/ToyBlock.glb" id="22"]
+[ext_resource type="PackedScene" path="res://assets/models/Ruler.glb" id="23"]
 
 [sub_resource type="ProceduralSkyMaterial" id="SkyMat_1"]
 sky_top_color = Color(0.45, 0.58, 0.85, 1)
@@ -237,3 +244,33 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 7.9, -4)
 
 [node name="Poster" parent="." instance=ExtResource("16")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 4, 9.8)
+
+[node name="LaundryBasket" parent="." instance=ExtResource("19")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.8, 0, 8.3)
+
+[node name="Bookshelf" parent="." instance=ExtResource("18")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, -9.55)
+
+[node name="Rug" parent="." instance=ExtResource("17")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, -7.2)
+
+[node name="Stool" parent="." instance=ExtResource("20")]
+transform = Transform3D(0.766044, 0, 0.642788, 0, 1, 0, -0.642788, 0, 0.766044, 1.7, 0, -1.6)
+
+[node name="SpareBook" type="Node3D" parent="."]
+transform = Transform3D(0.906308, 0, -0.422618, 0, 1, 0, 0.422618, 0, 0.906308, -1.6, 0, 1.5)
+
+[node name="Model" parent="SpareBook" instance=ExtResource("21")]
+transform = Transform3D(2.2, 0, 0, 0, 0.18, 0, 0, 0, 1.6, 0, 0.09, 0)
+
+[node name="SpareToyBlock" type="Node3D" parent="."]
+transform = Transform3D(0.984808, 0, 0.173648, 0, 1, 0, -0.173648, 0, 0.984808, -2.3, 0, 0.2)
+
+[node name="Model" parent="SpareToyBlock" instance=ExtResource("22")]
+transform = Transform3D(1.2, 0, 0, 0, 0.35, 0, 0, 0, 1.2, 0, 0.175, 0)
+
+[node name="SpareRuler" type="Node3D" parent="."]
+transform = Transform3D(0.573576, 0, 0.819152, 0, 1, 0, -0.819152, 0, 0.573576, -0.6, 0, -2.4)
+
+[node name="Model" parent="SpareRuler" instance=ExtResource("23")]
+transform = Transform3D(2.6, 0, 0, 0, 0.08, 0, 0, 0, 0.55, 0, 0.04, 0)

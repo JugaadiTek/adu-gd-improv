@@ -37,7 +37,7 @@ const WHACKERS := [
 	{"name": "Pen", "role": "5 Iron", "color": Color(0.1, 0.15, 0.5), "radius": 0.02, "height": 0.65,
 		"max_power": 3.2, "loft_factor": 0.18, "min_speed_mult": 1.0},
 	{"name": "Toothbrush", "role": "Driver", "color": Color(0.9, 0.9, 0.95), "radius": 0.025, "height": 0.55,
-		"max_power": 4.0, "loft_factor": 0.34, "min_speed_mult": 1.3},
+		"max_power": 4.0, "loft_factor": 0.52, "min_speed_mult": 1.3}, # raised again (was 0.34) - real arc shot, not just "highest loft of the three"
 ]
 
 ## Real low-poly, textured models (see ClaudeNotes/collab/2026/08_008.md),

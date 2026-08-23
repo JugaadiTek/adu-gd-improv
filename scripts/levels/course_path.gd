@@ -16,7 +16,7 @@ const TOUCH_GAP := 0.0 # exact touching: no gap, no overlap, between blocks
 ## Kept well above 0: the floor below the course is lava (see FloorSensor) -
 ## every piece must stay clearly above it, never at or near floor level.
 const MIN_CENTER_Y := 0.4
-const MAX_CENTER_Y := 3.2
+const MAX_CENTER_Y := 4.0 # raised again (was 3.2) - "more verticality" ask
 const BASE_LENGTH := 8.6 # original hand-built course's approximate path length (m)
 const LENGTH_MULTIPLIER := 2.0 # halved from the earlier 4x pass per feedback
 ## Winding: a turn of this many degrees (either way) every ~2-4 pieces,
